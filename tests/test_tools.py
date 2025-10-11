@@ -2,8 +2,8 @@ import json
 import pytest
 from unittest.mock import MagicMock, AsyncMock
 from mcp.server.fastmcp.exceptions import ToolError
-from src.mcp_tim_wrapper.main import app
-from src.mcp_tim_wrapper.models import (
+from mcp_tim_wrapper.main import app
+from mcp_tim_wrapper.models import (
     ComputeFlightEmissionsResponse,
     ComputeTypicalFlightEmissionsResponse,
     ComputeScope3FlightEmissionsResponse,
@@ -24,6 +24,7 @@ pytestmark = pytest.mark.anyio
 
 @pytest.fixture
 def mock_api_client():
+    # Use AsyncMock for async methods
     return AsyncMock()
 
 @pytest.fixture
@@ -42,7 +43,7 @@ def client(mock_api_client):
 
 async def test_get_typical_flight_emissions_success(mock_context, mock_api_client):
     # Arrange
-    from src.mcp_tim_wrapper.main import get_typical_flight_emissions
+    from mcp_tim_wrapper.main import get_typical_flight_emissions
     mock_response = ComputeTypicalFlightEmissionsResponse(
         typicalFlightEmissions=[
             TypicalFlightEmission(
@@ -64,7 +65,7 @@ async def test_get_typical_flight_emissions_success(mock_context, mock_api_clien
 
 async def test_get_typical_flight_emissions_error(mock_context, mock_api_client):
     # Arrange
-    from src.mcp_tim_wrapper.main import get_typical_flight_emissions
+    from mcp_tim_wrapper.main import get_typical_flight_emissions
     mock_api_client.compute_typical_flight_emissions.side_effect = ValueError("Invalid market")
 
     # Act & Assert
@@ -74,7 +75,7 @@ async def test_get_typical_flight_emissions_error(mock_context, mock_api_client)
 
 async def test_get_specific_flight_emissions_success(mock_context, mock_api_client):
     # Arrange
-    from src.mcp_tim_wrapper.main import get_specific_flight_emissions
+    from mcp_tim_wrapper.main import get_specific_flight_emissions
     mock_response = ComputeFlightEmissionsResponse(
         flightEmissions=[
             FlightWithEmissions(
@@ -111,7 +112,7 @@ async def test_get_specific_flight_emissions_success(mock_context, mock_api_clie
 
 async def test_get_scope3_flight_emissions_success(mock_context, mock_api_client):
     # Arrange
-    from src.mcp_tim_wrapper.main import get_scope3_flight_emissions
+    from mcp_tim_wrapper.main import get_scope3_flight_emissions
     mock_response = ComputeScope3FlightEmissionsResponse(
         flightEmissions=[
             Scope3FlightWithEmissions(

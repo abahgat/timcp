@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 import pytest
-from src.mcp_tim_wrapper.main import app
+from mcp_tim_wrapper.main import app
 
 @pytest.fixture
 def client(monkeypatch):
