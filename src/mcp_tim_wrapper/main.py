@@ -21,9 +21,9 @@ from .tim_api_client import TravelImpactModelAPI
 # Define a lifespan context manager to manage the httpx client
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    api_key = os.environ.get("TRAVEL_IMPACT_API_KEY")
+    api_key = os.environ.get("TRAVEL_IMPACT_MODEL_API_KEY")
     if not api_key:
-        raise ValueError("TRAVEL_IMPACT_API_KEY environment variable not set.")
+        raise ValueError("TRAVEL_IMPACT_MODEL_API_KEY environment variable not set.")
 
     async with httpx.AsyncClient() as client:
         # Store the client in the app's state

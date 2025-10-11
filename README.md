@@ -15,7 +15,7 @@ A Model Context Protocol (MCP) server that acts as a wrapper for the Google Trav
 2.  **Set API Key:**
     You will need a Google Travel Impact Model API key. Set it as an environment variable:
     ```bash
-    export TRAVEL_IMPACT_API_KEY="your_api_key_here"
+    export TRAVEL_IMPACT_MODEL_API_KEY="your_api_key_here"
     ```
 
 ## Running the Server

@@ -50,5 +50,5 @@ jobs:
     - name: Run tests
       run: |
         source .venv/bin/activate
-        export TRAVEL_IMPACT_API_KEY="test-key"
+        export TRAVEL_IMPACT_MODEL_API_KEY="test-key"
         pytest
