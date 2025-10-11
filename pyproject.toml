@@ -1,0 +1,22 @@
+[project]
+name = "mcp-tim-wrapper"
+version = "0.1.0"
+description = "A wrapper for the Google Travel Impact Model API, providing tools to calculate flight emissions."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "httpx",
+    "mcp",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-anyio",
+    "trio",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

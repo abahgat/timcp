@@ -1,0 +1,54 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.12"
+
+    - name: Install uv
+      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    - name: Configure uv cache
+      run: echo "UV_CACHE_DIR=${{ runner.temp }}/uv_cache" >> $GITHUB_ENV
+
+    - name: Cache uv http cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ runner.temp }}/uv_cache
+        key: ${{ runner.os }}-uv-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-uv-
+
+    - name: Cache venv
+      id: cache-venv
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: ${{ runner.os }}-venv-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-venv-
+
+    - name: Install dependencies
+      if: steps.cache-venv.outputs.cache-hit != 'true'
+      run: |
+        ~/.cargo/bin/uv venv
+        source .venv/bin/activate
+        ~/.cargo/bin/uv pip install -e .
+
+    - name: Run tests
+      run: |
+        source .venv/bin/activate
+        export TRAVEL_IMPACT_API_KEY="test-key"
+        pytest
