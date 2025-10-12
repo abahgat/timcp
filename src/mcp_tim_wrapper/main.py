@@ -141,14 +141,17 @@ mcp_app = mcp.streamable_http_app()
 # WARNING: This configuration allows requests from any localhost origin.
 # For production, replace with specific allowed origins (e.g., ["https://yourdomain.com"])
 allowed_origins = os.environ.get(
-    "ALLOWED_ORIGINS",
-    "http://localhost:*,http://127.0.0.1:*"
+    "ALLOWED_ORIGINS", "http://localhost:*,http://127.0.0.1:*"
 ).split(",")
 
 mcp_app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins if allowed_origins != ["*"] else ["*"],
-    allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+" if "localhost:*" in str(allowed_origins) else None,
+    allow_origin_regex=(
+        r"http://(localhost|127\.0\.0\.1):\d+"
+        if "localhost:*" in str(allowed_origins)
+        else None
+    ),
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
