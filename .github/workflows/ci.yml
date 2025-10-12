@@ -43,9 +43,9 @@ jobs:
     - name: Install dependencies
       if: steps.cache-venv.outputs.cache-hit != 'true'
       run: |
-        ~/.cargo/bin/uv venv
+        $HOME/.local/bin/uv venv
         source .venv/bin/activate
-        ~/.cargo/bin/uv pip install -e .[dev]
+        $HOME/.local/bin/uv pip install -e .[dev]
 
     - name: Run linter and formatter
       run: |
@@ -89,9 +89,9 @@ jobs:
     - name: Install dependencies
       if: steps.cache-venv.outputs.cache-hit != 'true'
       run: |
-        ~/.cargo/bin/uv venv
+        $HOME/.local/bin/uv venv
         source .venv/bin/activate
-        ~/.cargo/bin/uv pip install -e .[test]
+        $HOME/.local/bin/uv pip install -e .[test]
 
     - name: Run tests
       run: |
