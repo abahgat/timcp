@@ -10,10 +10,10 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up Python 3.12
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: "3.12"
 
@@ -24,7 +24,7 @@ jobs:
       run: echo "UV_CACHE_DIR=${{ runner.temp }}/uv_cache" >> $GITHUB_ENV
 
     - name: Cache uv http cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{ runner.temp }}/uv_cache
         key: ${{ runner.os }}-uv-${{ hashFiles('''**/pyproject.toml''') }}
@@ -33,7 +33,7 @@ jobs:
 
     - name: Cache venv
       id: cache-venv
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: .venv
         key: ${{ runner.os }}-venv-${{ hashFiles('''**/pyproject.toml''') }}
@@ -56,44 +56,44 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up Python 3.12
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: "3.12"
 
-    - name of: Install uv
+    - name: Install uv
       run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
-    - name of: Configure uv cache
+    - name: Configure uv cache
       run: echo "UV_CACHE_DIR=${{ runner.temp }}/uv_cache" >> $GITHUB_ENV
 
-    - name of: Cache uv http cache
-      uses: actions/cache@v3
+    - name: Cache uv http cache
+      uses: actions/cache@v4
       with:
         path: ${{ runner.temp }}/uv_cache
         key: ${{ runner.os }}-uv-${{ hashFiles('''**/pyproject.toml''') }}
         restore-keys: |
           ${{ runner.os }}-uv-
 
-    - name of: Cache venv
+    - name: Cache venv
       id: cache-venv
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: .venv
         key: ${{ runner.os }}-venv-${{ hashFiles('''**/pyproject.toml''') }}
         restore-keys: |
           ${{ runner.os }}-venv-
 
-    - name of: Install dependencies
+    - name: Install dependencies
       if: steps.cache-venv.outputs.cache-hit != 'true'
       run: |
         ~/.cargo/bin/uv venv
         source .venv/bin/activate
         ~/.cargo/bin/uv pip install -e .[test]
 
-    - name of: Run tests
+    - name: Run tests
       run: |
         source .venv/bin/activate
         export TRAVEL_IMPACT_MODEL_API_KEY="test-key"
