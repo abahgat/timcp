@@ -35,7 +35,7 @@ def test_cors_headers_on_mcp_endpoint(client):
         headers={
             "Origin": "http://localhost:5173",
             "Access-Control-Request-Method": "POST",
-        }
+        },
     )
     assert response.status_code == 200
     assert "access-control-allow-origin" in response.headers
@@ -54,7 +54,7 @@ def test_cors_allows_localhost_origins(client):
         headers={
             "Origin": "http://localhost:3000",
             "Access-Control-Request-Method": "POST",
-        }
+        },
     )
     assert response.status_code == 200
     # Verify CORS headers are present
@@ -70,7 +70,7 @@ def test_cors_max_age_configured(client):
         headers={
             "Origin": "http://localhost:3000",
             "Access-Control-Request-Method": "POST",
-        }
+        },
     )
     assert response.status_code == 200
     assert "access-control-max-age" in response.headers
