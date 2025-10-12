@@ -36,7 +36,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: .venv
-        key: ${{ runner.os }}-venv-${{ hashFiles('''**/pyproject.toml''') }}
+        key: ${{ runner.os }}-venv-${{ hashFiles('''**/pyproject.toml''') }}-v2
         restore-keys: |
           ${{ runner.os }}-venv-
 
