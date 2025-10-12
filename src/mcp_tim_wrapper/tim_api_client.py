@@ -1,5 +1,3 @@
-import os
-from typing import Union
 import httpx
 from pydantic import ValidationError
 
@@ -12,6 +10,7 @@ from .models import (
     ComputeTypicalFlightEmissionsResponse,
 )
 
+
 class TravelImpactModelAPI:
     BASE_URL = "https://travelimpactmodel.googleapis.com/v1"
 
@@ -21,9 +20,7 @@ class TravelImpactModelAPI:
         self.api_key = api_key
         self._client = client
 
-    async def _make_request(
-        self, endpoint: str, request_data: dict
-    ) -> httpx.Response:
+    async def _make_request(self, endpoint: str, request_data: dict) -> httpx.Response:
         url = f"{self.BASE_URL}/{endpoint}?key={self.api_key}"
         response = await self._client.post(url, json=request_data)
         response.raise_for_status()  # Raise an exception for bad status codes
@@ -61,6 +58,7 @@ class TravelImpactModelAPI:
             return ComputeScope3FlightEmissionsResponse.model_validate(response.json())
         except ValidationError as e:
             raise ValueError(f"Failed to parse response: {e}")
+
 
 # The get_tim_api_client function is removed as the client will be managed
 # by the application's lifespan events.

@@ -1,4 +1,3 @@
-import json
 import pytest
 from unittest.mock import MagicMock, AsyncMock
 from mcp.server.fastmcp.exceptions import ToolError
@@ -22,10 +21,12 @@ from mcp.server.fastmcp import Context
 
 pytestmark = pytest.mark.anyio
 
+
 @pytest.fixture
 def mock_api_client():
     # Use AsyncMock for async methods
     return AsyncMock()
+
 
 @pytest.fixture
 def mock_context(mock_api_client):
@@ -33,6 +34,7 @@ def mock_context(mock_api_client):
     mock_context = MagicMock(spec=Context)
     mock_context.request_context.request.app.state.api_client = mock_api_client
     return mock_context
+
 
 @pytest.fixture
 def client(mock_api_client):
@@ -44,6 +46,7 @@ def client(mock_api_client):
 async def test_get_typical_flight_emissions_success(mock_context, mock_api_client):
     # Arrange
     from mcp_tim_wrapper.main import get_typical_flight_emissions
+
     mock_response = ComputeTypicalFlightEmissionsResponse(
         typicalFlightEmissions=[
             TypicalFlightEmission(
@@ -66,7 +69,10 @@ async def test_get_typical_flight_emissions_success(mock_context, mock_api_clien
 async def test_get_typical_flight_emissions_error(mock_context, mock_api_client):
     # Arrange
     from mcp_tim_wrapper.main import get_typical_flight_emissions
-    mock_api_client.compute_typical_flight_emissions.side_effect = ValueError("Invalid market")
+
+    mock_api_client.compute_typical_flight_emissions.side_effect = ValueError(
+        "Invalid market"
+    )
 
     # Act & Assert
     with pytest.raises(ToolError, match="Invalid market"):
@@ -76,6 +82,7 @@ async def test_get_typical_flight_emissions_error(mock_context, mock_api_client)
 async def test_get_specific_flight_emissions_success(mock_context, mock_api_client):
     # Arrange
     from mcp_tim_wrapper.main import get_specific_flight_emissions
+
     mock_response = ComputeFlightEmissionsResponse(
         flightEmissions=[
             FlightWithEmissions(
@@ -113,6 +120,7 @@ async def test_get_specific_flight_emissions_success(mock_context, mock_api_clie
 async def test_get_scope3_flight_emissions_success(mock_context, mock_api_client):
     # Arrange
     from mcp_tim_wrapper.main import get_scope3_flight_emissions
+
     mock_response = ComputeScope3FlightEmissionsResponse(
         flightEmissions=[
             Scope3FlightWithEmissions(

@@ -17,9 +17,26 @@ test = [
     "pytest-anyio",
     "trio",
 ]
+dev = [
+    "ruff",
+    "black",
+]
+lint = [
+    "ruff",
+]
+format = [
+    "black",
+]
+
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 88
+
+[tool.black]
+line-length = 88

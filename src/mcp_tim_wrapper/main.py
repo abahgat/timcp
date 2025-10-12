@@ -18,6 +18,7 @@ from .models import (
 )
 from .tim_api_client import TravelImpactModelAPI
 
+
 # Define a lifespan context manager to manage the httpx client
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -30,6 +31,7 @@ async def lifespan(app: FastAPI):
         app.state.api_client = TravelImpactModelAPI(api_key=api_key, client=client)
         yield
 
+
 # Create the main FastAPI application
 app = FastAPI(lifespan=lifespan)
 
@@ -38,6 +40,7 @@ mcp_app = FastMCP(
     name="Google Travel Impact Model Wrapper",
     instructions="A wrapper for the Google Travel Impact Model API, providing tools to calculate flight emissions.",
 )
+
 
 # Add a health check endpoint to the mcp application
 @mcp_app.custom_route("/health", methods=["GET"], include_in_schema=False)
@@ -50,9 +53,13 @@ async def health_check(request: Request) -> Response:
     title="Get Typical Flight Emissions",
     description="Retrieves typical flight emissions estimates between two airports (a market).",
 )
-async def get_typical_flight_emissions(context: Context, origin: str, destination: str) -> dict:
+async def get_typical_flight_emissions(
+    context: Context, origin: str, destination: str
+) -> dict:
     try:
-        client: TravelImpactModelAPI = context.request_context.request.app.state.api_client
+        client: TravelImpactModelAPI = (
+            context.request_context.request.app.state.api_client
+        )
         api_request = ComputeTypicalFlightEmissionsRequest(
             markets=[Market(origin=origin, destination=destination)]
         )
@@ -78,7 +85,9 @@ async def get_specific_flight_emissions(
     departure_day: int,
 ) -> dict:
     try:
-        client: TravelImpactModelAPI = context.request_context.request.app.state.api_client
+        client: TravelImpactModelAPI = (
+            context.request_context.request.app.state.api_client
+        )
         api_request = ComputeFlightEmissionsRequest(
             flights=[
                 Flight(
@@ -116,7 +125,9 @@ async def get_scope3_flight_emissions(
     distance_km: str | None = None,
 ) -> dict:
     try:
-        client: TravelImpactModelAPI = context.request_context.request.app.state.api_client
+        client: TravelImpactModelAPI = (
+            context.request_context.request.app.state.api_client
+        )
         api_request = ComputeScope3FlightEmissionsRequest(
             flights=[
                 Scope3Flight(

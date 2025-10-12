@@ -24,3 +24,18 @@ To run the MCP server, use the following command:
 ```bash
 uvicorn src.mcp_tim_wrapper.main:app --host 0.0.0.0 --port 8080
 ```
+
+## Testing
+
+This project uses `pytest` for testing. To run the tests, first install the test dependencies:
+
+```bash
+uv pip install -e .[test]
+```
+
+Then, run the tests using the following command:
+
+```bash
+pytest
+```
+
