@@ -36,7 +36,9 @@ class TravelImpactModelAPI:
                     error_info = error_detail["error"]
                     error_msg = f"TIM API Error ({response.status_code}): {error_info.get('message', str(error_info))}"
                 else:
-                    error_msg = f"TIM API Error ({response.status_code}): {error_detail}"
+                    error_msg = (
+                        f"TIM API Error ({response.status_code}): {error_detail}"
+                    )
             except Exception:
                 # If we can't parse the error as JSON, use the text
                 error_msg = f"TIM API Error ({response.status_code}): {response.text}"
