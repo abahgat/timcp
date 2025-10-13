@@ -169,8 +169,13 @@ async def combined_lifespan(app: FastAPI):
 
     # Start both the httpx client and MCP app's lifespan
     async with httpx.AsyncClient() as client:
-        # Store the client in the app's state
-        app.state.api_client = TravelImpactModelAPI(api_key=api_key, client=client)
+        # IMPORTANT: Store API client in BOTH app states.
+        # When mcp_app is mounted, tools access context.request_context.request.app.state,
+        # which refers to the mounted app (mcp_app), not the parent app.
+        # Without storing in both, tools fail with: 'State' object has no attribute 'api_client'
+        api_client = TravelImpactModelAPI(api_key=api_key, client=client)
+        app.state.api_client = api_client
+        mcp_app.state.api_client = api_client
 
         # Initialize MCP's task group via its lifespan
         async with mcp_app.router.lifespan_context(mcp_app):
