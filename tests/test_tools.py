@@ -154,3 +154,43 @@ async def test_get_scope3_flight_emissions_success(mock_context, mock_api_client
     # Assert
     assert result == mock_response.model_dump(by_alias=True)
     mock_api_client.compute_scope3_flight_emissions.assert_awaited_once()
+
+
+async def test_get_scope3_flight_emissions_without_dated(mock_context, mock_api_client):
+    # Arrange - Test that scope3 works when modelVersion.dated is None (real API behavior)
+    from mcp_tim_wrapper.main import get_scope3_flight_emissions
+
+    mock_response = ComputeScope3FlightEmissionsResponse(
+        flightEmissions=[
+            Scope3FlightWithEmissions(
+                flight=Scope3Flight(
+                    departureDate=Date(year=2024, month=10, day=1),
+                    cabinClass="ECONOMY",
+                    origin="JFK",
+                    destination="SFO",
+                ),
+                wtwEmissionsGramsPerPax="12345",
+                source="TIM_EMISSIONS",
+                ttwEmissionsGramsPerPax="10000",
+                wttEmissionsGramsPerPax="2345",
+            )
+        ],
+        modelVersion=ModelVersion(major=2, minor=0, patch=0),  # No dated field
+    )
+    mock_api_client.compute_scope3_flight_emissions.return_value = mock_response
+
+    # Act
+    result = await get_scope3_flight_emissions(
+        mock_context,
+        departure_year=2024,
+        departure_month=10,
+        departure_day=1,
+        cabin_class="ECONOMY",
+        origin="JFK",
+        destination="SFO",
+    )
+
+    # Assert
+    assert result == mock_response.model_dump(by_alias=True)
+    assert result["modelVersion"]["dated"] is None
+    mock_api_client.compute_scope3_flight_emissions.assert_awaited_once()

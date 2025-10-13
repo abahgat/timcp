@@ -49,7 +49,7 @@ async def get_typical_flight_emissions(
         )
         response = await client.compute_typical_flight_emissions(api_request)
         return response.model_dump(by_alias=True)
-    except (ValueError, httpx.HTTPStatusError) as e:
+    except ValueError as e:
         raise ToolError(str(e))
 
 
@@ -87,7 +87,7 @@ async def get_specific_flight_emissions(
         )
         response = await client.compute_flight_emissions(api_request)
         return response.model_dump(by_alias=True)
-    except (ValueError, httpx.HTTPStatusError) as e:
+    except ValueError as e:
         raise ToolError(str(e))
 
 
@@ -129,7 +129,7 @@ async def get_scope3_flight_emissions(
         )
         response = await client.compute_scope3_flight_emissions(api_request)
         return response.model_dump(by_alias=True)
-    except (ValueError, httpx.HTTPStatusError) as e:
+    except ValueError as e:
         raise ToolError(str(e))
 
 

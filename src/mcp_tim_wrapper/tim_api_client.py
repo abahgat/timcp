@@ -23,7 +23,27 @@ class TravelImpactModelAPI:
     async def _make_request(self, endpoint: str, request_data: dict) -> httpx.Response:
         url = f"{self.BASE_URL}/{endpoint}?key={self.api_key}"
         response = await self._client.post(url, json=request_data)
-        response.raise_for_status()  # Raise an exception for bad status codes
+
+        # Check for error status codes and provide detailed error message
+        try:
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            # Try to extract detailed error message from response body
+            try:
+                error_detail = response.json()
+                # Google APIs typically return errors in this format
+                if "error" in error_detail:
+                    error_info = error_detail["error"]
+                    error_msg = f"TIM API Error ({response.status_code}): {error_info.get('message', str(error_info))}"
+                else:
+                    error_msg = f"TIM API Error ({response.status_code}): {error_detail}"
+            except Exception:
+                # If we can't parse the error as JSON, use the text
+                error_msg = f"TIM API Error ({response.status_code}): {response.text}"
+
+            # Raise a ValueError with the detailed message instead of HTTPStatusError
+            raise ValueError(error_msg) from e
+
         return response
 
     async def compute_flight_emissions(

@@ -20,7 +20,7 @@ class ModelVersion(BaseModel):
     major: int
     minor: int
     patch: int
-    dated: str
+    dated: Optional[str] = None
 
 
 # Models for computeFlightEmissions
