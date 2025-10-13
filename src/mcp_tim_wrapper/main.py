@@ -35,7 +35,15 @@ async def health_check(request: Request) -> Response:
 @mcp.tool(
     name="get_typical_flight_emissions",
     title="Get Typical Flight Emissions",
-    description="Retrieves typical flight emissions estimates between two airports (a market).",
+    description="""Retrieves typical flight emissions estimates between two airports (a market).
+
+Required parameters:
+- origin: IATA airport code (e.g., "JFK", "LAX")
+- destination: IATA airport code (e.g., "LHR", "SFO")
+
+Example: get_typical_flight_emissions(origin="JFK", destination="LAX")
+
+Returns emissions estimates in grams per passenger for different cabin classes.""",
 )
 async def get_typical_flight_emissions(
     context: Context, origin: str, destination: str
@@ -56,7 +64,28 @@ async def get_typical_flight_emissions(
 @mcp.tool(
     name="get_specific_flight_emissions",
     title="Get Specific Flight Emissions",
-    description="Retrieves emission estimates for a specific flight.",
+    description="""Retrieves emission estimates for a specific flight on a given date.
+
+Required parameters:
+- origin: IATA airport code (e.g., "JFK")
+- destination: IATA airport code (e.g., "LAX")
+- operating_carrier_code: IATA airline code (e.g., "UA" for United, "AA" for American)
+- flight_number: Flight number as integer (e.g., 123)
+- departure_year: Year (e.g., 2024)
+- departure_month: Month 1-12 (e.g., 10 for October)
+- departure_day: Day 1-31 (e.g., 15)
+
+Example: get_specific_flight_emissions(
+    origin="JFK",
+    destination="LAX",
+    operating_carrier_code="UA",
+    flight_number=123,
+    departure_year=2024,
+    departure_month=10,
+    departure_day=15
+)
+
+Returns emissions estimates in grams per passenger for different cabin classes.""",
 )
 async def get_specific_flight_emissions(
     context: Context,
@@ -94,7 +123,44 @@ async def get_specific_flight_emissions(
 @mcp.tool(
     name="get_scope3_flight_emissions",
     title="Get Scope 3 Flight Emissions",
-    description="Retrieves GHG emissions estimates for a set of flight segments for Scope 3 reporting.",
+    description="""Retrieves GHG emissions estimates for flight segments for Scope 3 reporting.
+
+Required parameters:
+- departure_year: Year (e.g., 2024)
+- departure_month: Month 1-12 (e.g., 10)
+- departure_day: Day 1-31 (e.g., 15)
+- cabin_class: One of "ECONOMY", "PREMIUM_ECONOMY", "BUSINESS", or "FIRST"
+
+IMPORTANT - Distance specification (choose ONE):
+You MUST provide EITHER:
+  Option A: Both origin AND destination (IATA codes like "JFK", "LAX")
+  Option B: distance_km (as a string, e.g., "5000")
+
+Optional parameters (for more specific queries):
+- carrier_code: IATA airline code (e.g., "UA")
+- flight_number: Flight number as integer (e.g., 123)
+
+Examples:
+1. Using origin/destination:
+   get_scope3_flight_emissions(
+       departure_year=2024,
+       departure_month=10,
+       departure_day=15,
+       cabin_class="ECONOMY",
+       origin="JFK",
+       destination="LAX"
+   )
+
+2. Using distance_km:
+   get_scope3_flight_emissions(
+       departure_year=2024,
+       departure_month=10,
+       departure_day=15,
+       cabin_class="BUSINESS",
+       distance_km="5000"
+   )
+
+Returns Well-to-Wake (WTW), Tank-to-Wake (TTW), and Well-to-Tank (WTT) emissions in grams per passenger.""",
 )
 async def get_scope3_flight_emissions(
     context: Context,
