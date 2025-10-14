@@ -18,6 +18,7 @@ from .models import (
     ComputeScope3FlightEmissionsRequest,
 )
 from .tim_api_client import TravelImpactModelAPI
+from typing import List
 
 # Create the FastMCP application
 mcp = FastMCP(
@@ -43,7 +44,9 @@ Required parameters:
 
 Example: get_typical_flight_emissions(origin="JFK", destination="LAX")
 
-Returns emissions estimates in grams per passenger for different cabin classes.""",
+Returns emissions estimates in grams per passenger for different cabin classes.
+
+Note: This endpoint provides average emissions and does not require a date.""",
 )
 async def get_typical_flight_emissions(
     context: Context, origin: str, destination: str
@@ -85,7 +88,9 @@ Example: get_specific_flight_emissions(
     departure_day=15
 )
 
-Returns emissions estimates in grams per passenger for different cabin classes.""",
+Returns emissions estimates in grams per passenger for different cabin classes.
+
+IMPORTANT: Departure date must be in the future. This endpoint uses real flight schedule data.""",
 )
 async def get_specific_flight_emissions(
     context: Context,
@@ -125,6 +130,8 @@ async def get_specific_flight_emissions(
     title="Get Scope 3 Flight Emissions",
     description="""Retrieves GHG emissions estimates for flight segments for Scope 3 reporting.
 
+This endpoint accepts historical dates and is designed for reporting past travel.
+
 Required parameters:
 - departure_year: Year (e.g., 2024)
 - departure_month: Month 1-12 (e.g., 10)
@@ -160,7 +167,10 @@ Examples:
        distance_km="5000"
    )
 
-Returns Well-to-Wake (WTW), Tank-to-Wake (TTW), and Well-to-Tank (WTT) emissions in grams per passenger.""",
+Returns Well-to-Wake (WTW), Tank-to-Wake (TTW), and Well-to-Tank (WTT) emissions in grams per passenger.
+
+NOTE: This tool processes one flight at a time. For calculating emissions for multiple flights,
+use get_scope3_flight_emissions_batch which is more efficient.""",
 )
 async def get_scope3_flight_emissions(
     context: Context,
@@ -193,6 +203,141 @@ async def get_scope3_flight_emissions(
                 )
             ]
         )
+        response = await client.compute_scope3_flight_emissions(api_request)
+        return response.model_dump(by_alias=True)
+    except ValueError as e:
+        raise ToolError(str(e))
+
+
+# Batch endpoints for efficient multi-flight processing
+@mcp.tool(
+    name="get_typical_flight_emissions_batch",
+    title="Get Typical Flight Emissions (Batch)",
+    description="""Retrieves typical flight emissions for multiple airport pairs (markets) in a single request.
+
+This is more efficient than calling get_typical_flight_emissions multiple times.
+
+Required parameter:
+- markets: List of market objects, each with:
+  - origin: IATA airport code (e.g., "JFK")
+  - destination: IATA airport code (e.g., "LAX")
+
+Example:
+markets = [
+    {"origin": "JFK", "destination": "LAX"},
+    {"origin": "SFO", "destination": "LHR"}
+]
+
+Returns emissions estimates for all markets in grams per passenger for different cabin classes.
+
+Note: This endpoint provides average emissions and does not require dates.""",
+)
+async def get_typical_flight_emissions_batch(
+    context: Context, markets: List[Market]
+) -> dict:
+    try:
+        client: TravelImpactModelAPI = (
+            context.request_context.request.app.state.api_client
+        )
+        api_request = ComputeTypicalFlightEmissionsRequest(markets=markets)
+        response = await client.compute_typical_flight_emissions(api_request)
+        return response.model_dump(by_alias=True)
+    except ValueError as e:
+        raise ToolError(str(e))
+
+
+@mcp.tool(
+    name="get_specific_flight_emissions_batch",
+    title="Get Specific Flight Emissions (Batch)",
+    description="""Retrieves emission estimates for multiple specific flights in a single request.
+
+This is more efficient than calling get_specific_flight_emissions multiple times.
+
+Required parameter:
+- flights: List of flight objects, each with:
+  - origin: IATA airport code (e.g., "JFK")
+  - destination: IATA airport code (e.g., "LAX")
+  - operatingCarrierCode: IATA airline code (e.g., "UA")
+  - flightNumber: Flight number as integer (e.g., 123)
+  - departureDate: Object with year, month, day (e.g., {"year": 2024, "month": 10, "day": 15})
+
+Example:
+flights = [
+    {
+        "origin": "JFK",
+        "destination": "LAX",
+        "operatingCarrierCode": "UA",
+        "flightNumber": 123,
+        "departureDate": {"year": 2024, "month": 10, "day": 15}
+    },
+    {
+        "origin": "SFO",
+        "destination": "LHR",
+        "operatingCarrierCode": "BA",
+        "flightNumber": 456,
+        "departureDate": {"year": 2024, "month": 11, "day": 20}
+    }
+]
+
+Returns emissions estimates for all flights in grams per passenger for different cabin classes.
+
+IMPORTANT: All departure dates must be in the future. This endpoint uses real flight schedule data.""",
+)
+async def get_specific_flight_emissions_batch(
+    context: Context, flights: List[Flight]
+) -> dict:
+    try:
+        client: TravelImpactModelAPI = (
+            context.request_context.request.app.state.api_client
+        )
+        api_request = ComputeFlightEmissionsRequest(flights=flights)
+        response = await client.compute_flight_emissions(api_request)
+        return response.model_dump(by_alias=True)
+    except ValueError as e:
+        raise ToolError(str(e))
+
+
+@mcp.tool(
+    name="get_scope3_flight_emissions_batch",
+    title="Get Scope 3 Flight Emissions (Batch)",
+    description="""Retrieves GHG emissions for multiple flight segments in a single request for Scope 3 reporting.
+
+This is more efficient than calling get_scope3_flight_emissions multiple times.
+
+This endpoint accepts historical dates and is designed for reporting past travel.
+
+Required parameter:
+- flights: List of flight objects, each with:
+  - departureDate: Object with year, month, day (e.g., {"year": 2024, "month": 10, "day": 15})
+  - cabinClass: One of "ECONOMY", "PREMIUM_ECONOMY", "BUSINESS", or "FIRST"
+  - EITHER origin AND destination (IATA codes) OR distanceKm (as string)
+  - Optional: carrierCode (IATA airline code) and flightNumber (integer)
+
+Example:
+flights = [
+    {
+        "departureDate": {"year": 2024, "month": 10, "day": 15},
+        "cabinClass": "ECONOMY",
+        "origin": "JFK",
+        "destination": "LAX"
+    },
+    {
+        "departureDate": {"year": 2024, "month": 11, "day": 20},
+        "cabinClass": "BUSINESS",
+        "distanceKm": "5000"
+    }
+]
+
+Returns Well-to-Wake (WTW), Tank-to-Wake (TTW), and Well-to-Tank (WTT) emissions in grams per passenger for all flights.""",
+)
+async def get_scope3_flight_emissions_batch(
+    context: Context, flights: List[Scope3Flight]
+) -> dict:
+    try:
+        client: TravelImpactModelAPI = (
+            context.request_context.request.app.state.api_client
+        )
+        api_request = ComputeScope3FlightEmissionsRequest(flights=flights)
         response = await client.compute_scope3_flight_emissions(api_request)
         return response.model_dump(by_alias=True)
     except ValueError as e:
