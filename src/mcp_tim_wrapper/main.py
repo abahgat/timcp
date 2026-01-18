@@ -34,7 +34,7 @@ async def health_check(request: Request) -> Response:
 
 
 @mcp.tool(
-    name="get_typical_flight_emissions",
+    name="tim_get_typical_flight_emissions",
     title="Get Typical Flight Emissions",
     description="""Retrieves typical flight emissions estimates between two airports (a market).
 
@@ -65,7 +65,7 @@ async def get_typical_flight_emissions(
 
 
 @mcp.tool(
-    name="get_specific_flight_emissions",
+    name="tim_get_specific_flight_emissions",
     title="Get Specific Flight Emissions",
     description="""Retrieves emission estimates for a specific flight on a given date.
 
@@ -126,7 +126,7 @@ async def get_specific_flight_emissions(
 
 
 @mcp.tool(
-    name="get_scope3_flight_emissions",
+    name="tim_get_scope3_flight_emissions",
     title="Get Scope 3 Flight Emissions",
     description="""Retrieves GHG emissions estimates for flight segments for Scope 3 reporting.
 
@@ -211,7 +211,7 @@ async def get_scope3_flight_emissions(
 
 # Batch endpoints for efficient multi-flight processing
 @mcp.tool(
-    name="get_typical_flight_emissions_batch",
+    name="tim_get_typical_flight_emissions_batch",
     title="Get Typical Flight Emissions (Batch)",
     description="""Retrieves typical flight emissions for multiple airport pairs (markets) in a single request.
 
@@ -247,7 +247,7 @@ async def get_typical_flight_emissions_batch(
 
 
 @mcp.tool(
-    name="get_specific_flight_emissions_batch",
+    name="tim_get_specific_flight_emissions_batch",
     title="Get Specific Flight Emissions (Batch)",
     description="""Retrieves emission estimates for multiple specific flights in a single request.
 
@@ -298,7 +298,7 @@ async def get_specific_flight_emissions_batch(
 
 
 @mcp.tool(
-    name="get_scope3_flight_emissions_batch",
+    name="tim_get_scope3_flight_emissions_batch",
     title="Get Scope 3 Flight Emissions (Batch)",
     description="""Retrieves GHG emissions for multiple flight segments in a single request for Scope 3 reporting.
 
