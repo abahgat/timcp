@@ -194,3 +194,211 @@ async def test_get_scope3_flight_emissions_without_dated(mock_context, mock_api_
     assert result == mock_response.model_dump(by_alias=True)
     assert result["modelVersion"]["dated"] is None
     mock_api_client.compute_scope3_flight_emissions.assert_awaited_once()
+
+
+# Batch endpoint tests
+
+
+async def test_get_typical_flight_emissions_batch_success(
+    mock_context, mock_api_client
+):
+    # Arrange
+    from mcp_tim_wrapper.main import get_typical_flight_emissions_batch
+
+    mock_response = ComputeTypicalFlightEmissionsResponse(
+        typicalFlightEmissions=[
+            TypicalFlightEmission(
+                market=Market(origin="LAX", destination="JFK"),
+                emissionsGramsPerPax=EmissionsGramsPerPax(economy=100, business=200),
+            ),
+            TypicalFlightEmission(
+                market=Market(origin="SFO", destination="LHR"),
+                emissionsGramsPerPax=EmissionsGramsPerPax(economy=450, business=900),
+            ),
+        ],
+        modelVersion=ModelVersion(major=1, minor=0, patch=0, dated="2023-01-01"),
+    )
+    mock_api_client.compute_typical_flight_emissions.return_value = mock_response
+
+    # Act
+    markets = [
+        Market(origin="LAX", destination="JFK"),
+        Market(origin="SFO", destination="LHR"),
+    ]
+    result = await get_typical_flight_emissions_batch(mock_context, markets)
+
+    # Assert
+    assert result == mock_response.model_dump(by_alias=True)
+    assert len(result["typicalFlightEmissions"]) == 2
+    mock_api_client.compute_typical_flight_emissions.assert_awaited_once()
+
+
+async def test_get_typical_flight_emissions_batch_error(mock_context, mock_api_client):
+    # Arrange
+    from mcp_tim_wrapper.main import get_typical_flight_emissions_batch
+
+    mock_api_client.compute_typical_flight_emissions.side_effect = ValueError(
+        "Invalid market in batch"
+    )
+
+    # Act & Assert
+    markets = [Market(origin="XXX", destination="YYY")]
+    with pytest.raises(ToolError, match="Invalid market in batch"):
+        await get_typical_flight_emissions_batch(mock_context, markets)
+
+
+async def test_get_specific_flight_emissions_batch_success(
+    mock_context, mock_api_client
+):
+    # Arrange
+    from mcp_tim_wrapper.main import get_specific_flight_emissions_batch
+
+    mock_response = ComputeFlightEmissionsResponse(
+        flightEmissions=[
+            FlightWithEmissions(
+                flight=Flight(
+                    origin="SFO",
+                    destination="LHR",
+                    operatingCarrierCode="UA",
+                    flightNumber=901,
+                    departureDate=Date(year=2024, month=10, day=1),
+                ),
+                emissionsGramsPerPax=EmissionsGramsPerPax(economy=500, first=1500),
+            ),
+            FlightWithEmissions(
+                flight=Flight(
+                    origin="JFK",
+                    destination="LAX",
+                    operatingCarrierCode="AA",
+                    flightNumber=100,
+                    departureDate=Date(year=2024, month=10, day=2),
+                ),
+                emissionsGramsPerPax=EmissionsGramsPerPax(economy=150, business=300),
+            ),
+        ],
+        modelVersion=ModelVersion(major=1, minor=0, patch=0, dated="2023-01-01"),
+    )
+    mock_api_client.compute_flight_emissions.return_value = mock_response
+
+    # Act
+    flights = [
+        Flight(
+            origin="SFO",
+            destination="LHR",
+            operatingCarrierCode="UA",
+            flightNumber=901,
+            departureDate=Date(year=2024, month=10, day=1),
+        ),
+        Flight(
+            origin="JFK",
+            destination="LAX",
+            operatingCarrierCode="AA",
+            flightNumber=100,
+            departureDate=Date(year=2024, month=10, day=2),
+        ),
+    ]
+    result = await get_specific_flight_emissions_batch(mock_context, flights)
+
+    # Assert
+    assert result == mock_response.model_dump(by_alias=True)
+    assert len(result["flightEmissions"]) == 2
+    mock_api_client.compute_flight_emissions.assert_awaited_once()
+
+
+async def test_get_specific_flight_emissions_batch_error(mock_context, mock_api_client):
+    # Arrange
+    from mcp_tim_wrapper.main import get_specific_flight_emissions_batch
+
+    mock_api_client.compute_flight_emissions.side_effect = ValueError(
+        "Flight not found"
+    )
+
+    # Act & Assert
+    flights = [
+        Flight(
+            origin="SFO",
+            destination="LHR",
+            operatingCarrierCode="XX",
+            flightNumber=999,
+            departureDate=Date(year=2024, month=10, day=1),
+        ),
+    ]
+    with pytest.raises(ToolError, match="Flight not found"):
+        await get_specific_flight_emissions_batch(mock_context, flights)
+
+
+async def test_get_scope3_flight_emissions_batch_success(mock_context, mock_api_client):
+    # Arrange
+    from mcp_tim_wrapper.main import get_scope3_flight_emissions_batch
+
+    mock_response = ComputeScope3FlightEmissionsResponse(
+        flightEmissions=[
+            Scope3FlightWithEmissions(
+                flight=Scope3Flight(
+                    departureDate=Date(year=2024, month=10, day=1),
+                    cabinClass="ECONOMY",
+                    origin="JFK",
+                    destination="SFO",
+                ),
+                wtwEmissionsGramsPerPax="12345",
+                source="TIM_EMISSIONS",
+                ttwEmissionsGramsPerPax="10000",
+                wttEmissionsGramsPerPax="2345",
+            ),
+            Scope3FlightWithEmissions(
+                flight=Scope3Flight(
+                    departureDate=Date(year=2024, month=11, day=15),
+                    cabinClass="BUSINESS",
+                    distanceKm="5000",
+                ),
+                wtwEmissionsGramsPerPax="25000",
+                source="TIM_EMISSIONS",
+                ttwEmissionsGramsPerPax="20000",
+                wttEmissionsGramsPerPax="5000",
+            ),
+        ],
+        modelVersion=ModelVersion(major=1, minor=0, patch=0, dated="2023-01-01"),
+    )
+    mock_api_client.compute_scope3_flight_emissions.return_value = mock_response
+
+    # Act
+    flights = [
+        Scope3Flight(
+            departureDate=Date(year=2024, month=10, day=1),
+            cabinClass="ECONOMY",
+            origin="JFK",
+            destination="SFO",
+        ),
+        Scope3Flight(
+            departureDate=Date(year=2024, month=11, day=15),
+            cabinClass="BUSINESS",
+            distanceKm="5000",
+        ),
+    ]
+    result = await get_scope3_flight_emissions_batch(mock_context, flights)
+
+    # Assert
+    assert result == mock_response.model_dump(by_alias=True)
+    assert len(result["flightEmissions"]) == 2
+    mock_api_client.compute_scope3_flight_emissions.assert_awaited_once()
+
+
+async def test_get_scope3_flight_emissions_batch_error(mock_context, mock_api_client):
+    # Arrange
+    from mcp_tim_wrapper.main import get_scope3_flight_emissions_batch
+
+    mock_api_client.compute_scope3_flight_emissions.side_effect = ValueError(
+        "Invalid cabin class"
+    )
+
+    # Act & Assert
+    flights = [
+        Scope3Flight(
+            departureDate=Date(year=2024, month=10, day=1),
+            cabinClass="INVALID",
+            origin="JFK",
+            destination="SFO",
+        ),
+    ]
+    with pytest.raises(ToolError, match="Invalid cabin class"):
+        await get_scope3_flight_emissions_batch(mock_context, flights)
