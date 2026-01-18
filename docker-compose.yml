@@ -1,0 +1,7 @@
+services:
+  tim-mcp:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - TRAVEL_IMPACT_MODEL_API_KEY=${TRAVEL_IMPACT_MODEL_API_KEY}
