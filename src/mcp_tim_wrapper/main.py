@@ -22,7 +22,7 @@ from typing import List
 
 # Create the FastMCP application
 mcp = FastMCP(
-    name="Google Travel Impact Model Wrapper",
+    name="tim_mcp",
     instructions="A wrapper for the Google Travel Impact Model API, providing tools to calculate flight emissions.",
 )
 
