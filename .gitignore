@@ -124,6 +124,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# API key for the Travel Impact Model service
-.api_key
