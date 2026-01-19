@@ -31,14 +31,45 @@ if [[ "$NEW_VERSION" == "$CURRENT_VERSION" ]]; then
   exit 1
 fi
 
-# Update pyproject.toml (works on Linux/macOS)
-# Using python to strictly replace the version in the [project] table would be better,
-# but for simplicity/universality with standard tools, we'll use sed carefully.
-# We match 'version = "..."' only.
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  sed -i '' "s/version = \"$CURRENT_VERSION\"/version = \"$NEW_VERSION\"/" pyproject.toml
-else
-  sed -i "s/version = \"$CURRENT_VERSION\"/version = \"$NEW_VERSION\"/" pyproject.toml
+# Update pyproject.toml using Python for cross-platform compatibility
+python3 -c "
+import sys
+
+current_version = '$CURRENT_VERSION'
+new_version = '$NEW_VERSION'
+file_path = 'pyproject.toml'
+
+with open(file_path, 'r') as f:
+    lines = f.readlines()
+
+new_lines = []
+inside_project = False
+replaced = False
+
+for line in lines:
+    stripped = line.strip()
+    if stripped == '[project]':
+        inside_project = True
+    elif stripped.startswith('[') and stripped != '[project]':
+        inside_project = False
+
+    if inside_project and line.startswith('version = ') and current_version in line:
+        new_lines.append(f'version = \"{new_version}\"\n')
+        replaced = True
+    else:
+        new_lines.append(line)
+
+if not replaced:
+    print(f'Error: Could not find version string \"{current_version}\" inside [project] block.')
+    sys.exit(1)
+
+with open(file_path, 'w') as f:
+    f.writelines(new_lines)
+"
+
+if [[ $? -ne 0 ]]; then
+    echo "Failed to update pyproject.toml"
+    exit 1
 fi
 
 echo "Updated pyproject.toml to version $NEW_VERSION"
