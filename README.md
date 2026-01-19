@@ -36,11 +36,22 @@ Watch how to use this MCP server with Claude Code to:
 
 ### Prerequisites
 
-- Python 3.12 or higher
 - [Google Travel Impact Model API key](https://developers.google.com/travel/impact-model/docs/getting-started)
-- Docker (optional, for containerized deployment)
+- Docker (recommended) or Python 3.12+
 
-### Option 1: Docker (Recommended)
+### Option 1: Docker Container (Easiest)
+
+Run the server immediately using the pre-built image from GitHub Container Registry:
+
+```bash
+docker run -p 8080:8080 \
+  -e TRAVEL_IMPACT_MODEL_API_KEY=your_api_key_here \
+  ghcr.io/abahgat/timcp:latest
+```
+
+The server will be available at `http://localhost:8080/mcp`.
+
+### Option 2: Docker Compose (Clone & Run)
 
 1. Clone the repository:
 
