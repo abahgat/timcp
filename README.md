@@ -514,6 +514,22 @@ pytest -v
 
 ## Development
 
+### Releasing
+
+To create a new release:
+1. Ensure you are on the `main` branch and have no uncommitted changes.
+2. Run the release helper script:
+   ```bash
+   ./scripts/release.sh
+   ```
+3. Follow the prompts to enter the new version number.
+
+The script will:
+- Update the version in `pyproject.toml`
+- Create a git commit and tag
+- Push to GitHub
+- Trigger the CI/CD pipeline which builds the Docker image and publishes it to GitHub Container Registry (GHCR) and creates a GitHub Release.
+
 ### Running Without Docker
 
 ```bash
