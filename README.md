@@ -39,7 +39,19 @@ Watch how to use this MCP server with Claude Code to:
 - [Google Travel Impact Model API key](https://developers.google.com/travel/impact-model/docs/getting-started)
 - Docker (recommended) or Python 3.12+
 
-### Option 1: Docker Container (Easiest)
+### Option 1: Quick Start (Recommended)
+
+Run directly using `uvx` (no installation required):
+
+```bash
+# Set your API key first
+export TRAVEL_IMPACT_MODEL_API_KEY=your_api_key_here
+
+# Run the MCP server
+uvx mcp-tim-wrapper
+```
+
+### Option 2: Docker Container
 
 Run the server immediately using the pre-built image from GitHub Container Registry:
 
@@ -51,7 +63,7 @@ docker run -p 8080:8080 \
 
 The server will be available at `http://localhost:8080/mcp`.
 
-### Option 2: Docker Compose (Clone & Run)
+### Option 3: Docker Compose (Clone & Run)
 
 1. Clone the repository:
 
@@ -76,7 +88,7 @@ docker-compose up
 
 The server is now running at `http://localhost:8080/mcp`.
 
-### Option 2: Local Installation
+### Option 4: Local Development
 
 1. Clone the repository:
 
@@ -115,7 +127,13 @@ set -a; source .env; set +a
 
 > **Note**: The `.env` file is in `.gitignore` to prevent committing secrets.
 
-4. Run the server:
+4. Run the server (Stdio):
+
+```bash
+mcp-tim-wrapper
+```
+
+Or run the server (HTTP):
 
 ```bash
 uvicorn mcp_tim_wrapper.main:app --host 127.0.0.1 --port 8080
@@ -127,14 +145,32 @@ The server is now running at `http://localhost:8080/mcp`.
 
 ## Configuring MCP Clients
 
-Once the server is running (locally or via Docker), configure your MCP client to connect.
-
 ### Claude Desktop
 
 Add to your config file:
 
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+**Using uvx (Recommended):**
+
+```json
+{
+  "mcpServers": {
+    "tim": {
+      "command": "uvx",
+      "args": [
+        "mcp-tim-wrapper"
+      ],
+      "env": {
+        "TRAVEL_IMPACT_MODEL_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+**Using Docker/HTTP:**
 
 ```json
 {
@@ -147,6 +183,14 @@ Add to your config file:
 ```
 
 ### Claude Code
+
+**Using Stdio:**
+
+```bash
+claude mcp add tim -- uvx mcp-tim-wrapper
+```
+
+**Using HTTP:**
 
 ```bash
 claude mcp add --transport http tim http://localhost:8080/mcp

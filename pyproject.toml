@@ -28,6 +28,8 @@ format = [
     "black",
 ]
 
+[project.scripts]
+mcp-tim-wrapper = "mcp_tim_wrapper.main:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

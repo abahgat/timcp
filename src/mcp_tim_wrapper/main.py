@@ -26,6 +26,32 @@ mcp = FastMCP(
     instructions="A wrapper for the Google Travel Impact Model API, providing tools to calculate flight emissions.",
 )
 
+# Global API client for Stdio mode
+# This allows tool functions to access the client when running in Stdio mode,
+# where the FastAPI app context (and thus app.state) is not available.
+_api_client: TravelImpactModelAPI | None = None
+
+
+def get_api_client(context: Context | None = None) -> TravelImpactModelAPI:
+    """
+    Retrieve the API client.
+    Prioritizes the global client (Stdio mode) if available.
+    Otherwise tries to retrieve from FastMCP context (FastAPI/SSE mode).
+    """
+    global _api_client
+    if _api_client is not None:
+        return _api_client
+
+    if context and context.request_context:
+        try:
+            return context.request_context.request.app.state.api_client
+        except AttributeError:
+            pass
+
+    raise ValueError(
+        "API client not initialized. Ensure the server is running with a valid context."
+    )
+
 
 # Add a health check endpoint to the mcp application
 @mcp.custom_route("/health", methods=["GET"], include_in_schema=False)
@@ -58,9 +84,7 @@ async def get_typical_flight_emissions(
     context: Context, origin: str, destination: str
 ) -> dict:
     try:
-        client: TravelImpactModelAPI = (
-            context.request_context.request.app.state.api_client
-        )
+        client = get_api_client(context)
         api_request = ComputeTypicalFlightEmissionsRequest(
             markets=[Market(origin=origin, destination=destination)]
         )
@@ -115,9 +139,7 @@ async def get_specific_flight_emissions(
     departure_day: int,
 ) -> dict:
     try:
-        client: TravelImpactModelAPI = (
-            context.request_context.request.app.state.api_client
-        )
+        client = get_api_client(context)
         api_request = ComputeFlightEmissionsRequest(
             flights=[
                 Flight(
@@ -203,9 +225,7 @@ async def get_scope3_flight_emissions(
     distance_km: str | None = None,
 ) -> dict:
     try:
-        client: TravelImpactModelAPI = (
-            context.request_context.request.app.state.api_client
-        )
+        client = get_api_client(context)
         api_request = ComputeScope3FlightEmissionsRequest(
             flights=[
                 Scope3Flight(
@@ -260,9 +280,7 @@ async def get_typical_flight_emissions_batch(
     context: Context, markets: List[Market]
 ) -> dict:
     try:
-        client: TravelImpactModelAPI = (
-            context.request_context.request.app.state.api_client
-        )
+        client = get_api_client(context)
         api_request = ComputeTypicalFlightEmissionsRequest(markets=markets)
         response = await client.compute_typical_flight_emissions(api_request)
         return response.model_dump(by_alias=True)
@@ -317,9 +335,7 @@ async def get_specific_flight_emissions_batch(
     context: Context, flights: List[Flight]
 ) -> dict:
     try:
-        client: TravelImpactModelAPI = (
-            context.request_context.request.app.state.api_client
-        )
+        client = get_api_client(context)
         api_request = ComputeFlightEmissionsRequest(flights=flights)
         response = await client.compute_flight_emissions(api_request)
         return response.model_dump(by_alias=True)
@@ -370,9 +386,7 @@ async def get_scope3_flight_emissions_batch(
     context: Context, flights: List[Scope3Flight]
 ) -> dict:
     try:
-        client: TravelImpactModelAPI = (
-            context.request_context.request.app.state.api_client
-        )
+        client = get_api_client(context)
         api_request = ComputeScope3FlightEmissionsRequest(flights=flights)
         response = await client.compute_scope3_flight_emissions(api_request)
         return response.model_dump(by_alias=True)
@@ -424,6 +438,10 @@ async def combined_lifespan(app: FastAPI):
         app.state.api_client = api_client
         mcp_app.state.api_client = api_client
 
+        # Also set the global variable for hybrid access if needed
+        global _api_client
+        _api_client = api_client
+
         # Initialize MCP's task group via its lifespan
         async with mcp_app.router.lifespan_context(mcp_app):
             yield
@@ -434,3 +452,38 @@ app = FastAPI(lifespan=combined_lifespan)
 
 # Mount the MCP app
 app.mount("/", mcp_app)
+
+
+def main():
+    """
+    Entry point for running the MCP server over Stdio.
+    """
+    import asyncio
+    from dotenv import load_dotenv
+
+    # Load environment variables from .env file
+    load_dotenv()
+
+    async def run():
+        api_key = os.environ.get("TRAVEL_IMPACT_MODEL_API_KEY")
+        if not api_key:
+            # Just print error and exit, let FastMCP or Python handle clean exit
+            print(
+                "TRAVEL_IMPACT_MODEL_API_KEY environment variable not set.",
+                file=os.sys.stderr,
+            )
+            os.sys.exit(1)
+
+        async with httpx.AsyncClient() as client:
+            global _api_client
+            _api_client = TravelImpactModelAPI(api_key=api_key, client=client)
+            await mcp.run_stdio_async()
+
+    try:
+        asyncio.run(run())
+    except KeyboardInterrupt:
+        pass
+
+
+if __name__ == "__main__":
+    main()
