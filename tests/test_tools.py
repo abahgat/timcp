@@ -1,25 +1,32 @@
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock
+from fastapi.testclient import TestClient
+from mcp.server.fastmcp import Context
 from mcp.server.fastmcp.exceptions import ToolError
+
 from mcp_tim_wrapper.main import app
 from mcp_tim_wrapper.models import (
     ComputeFlightEmissionsResponse,
-    ComputeTypicalFlightEmissionsResponse,
     ComputeScope3FlightEmissionsResponse,
-    FlightWithEmissions,
-    TypicalFlightEmission,
-    Scope3FlightWithEmissions,
-    ModelVersion,
-    Flight,
-    Market,
-    Scope3Flight,
+    ComputeTypicalFlightEmissionsResponse,
     Date,
     EmissionsGramsPerPax,
+    Flight,
+    FlightWithEmissions,
+    Market,
+    ModelVersion,
+    Scope3Flight,
+    Scope3FlightWithEmissions,
+    TypicalFlightEmission,
 )
-from fastapi.testclient import TestClient
-from mcp.server.fastmcp import Context
 
 pytestmark = pytest.mark.anyio
+
+
+@pytest.fixture(autouse=True)
+def mock_global_api_client(mock_api_client, monkeypatch):
+    monkeypatch.setattr("mcp_tim_wrapper.main._api_client", mock_api_client)
 
 
 @pytest.fixture
