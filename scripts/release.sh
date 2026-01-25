@@ -49,7 +49,7 @@ if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
 fi
 
 # Git operations
-git add pyproject.toml
+git add pyproject.toml server.json
 git commit -m "chore: release v$NEW_VERSION"
 git tag "v$NEW_VERSION"
 
