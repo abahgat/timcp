@@ -27,7 +27,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ${{ runner.temp }}/uv_cache
-        key: ${{ runner.os }}-uv-${{ hashFiles('''**/pyproject.toml''') }}
+        key: ${{ runner.os }}-uv-${{ hashFiles('**/pyproject.toml') }}
         restore-keys: |
           ${{ runner.os }}-uv-
 
@@ -36,7 +36,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: .venv
-        key: ${{ runner.os }}-venv-${{ hashFiles('''**/pyproject.toml''') }}-v2
+        key: ${{ runner.os }}-venv-${{ hashFiles('**/pyproject.toml') }}-v2
         restore-keys: |
           ${{ runner.os }}-venv-
 
@@ -86,7 +86,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ${{ runner.temp }}/uv_cache
-        key: ${{ runner.os }}-uv-${{ hashFiles('''**/pyproject.toml''') }}
+        key: ${{ runner.os }}-uv-${{ hashFiles('**/pyproject.toml') }}
         restore-keys: |
           ${{ runner.os }}-uv-
 
@@ -95,7 +95,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: .venv
-        key: ${{ runner.os }}-venv-${{ hashFiles('''**/pyproject.toml''') }}
+        key: ${{ runner.os }}-venv-${{ hashFiles('**/pyproject.toml') }}
         restore-keys: |
           ${{ runner.os }}-venv-
 
