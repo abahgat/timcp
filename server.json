@@ -5,7 +5,7 @@
   "homepage": "https://github.com/abahgat/timcp",
   "bugs": "https://github.com/abahgat/timcp/issues",
   "license": "Apache-2.0",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "keywords": [
     "mcp",
     "tim",
@@ -17,7 +17,7 @@
     {
       "registry_type": "pypi",
       "identifier": "mcp-tim-wrapper",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "runtime_hint": "uvx",
       "transport": {
         "type": "stdio"
